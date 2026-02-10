@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<link rel="icon" href="straw.png" type="image/png">
-
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>StrawHatPiratesShorts Gallery</title>
+
+<link rel="icon" href="strawhat.jpeg" type="image/png">
+<link rel="manifest" href="manifest.json">
 
 <link rel="preconnect" href="https://www.googleapis.com">
 <link rel="preconnect" href="https://img.youtube.com">
@@ -35,20 +35,39 @@ body.dark-mode {
     color: var(--text-dark);
 }
 
-/* Sticky header for mobile */
 header {
     position: sticky;
     top: 0;
-    background: inherit;
     z-index: 150;
+    background: inherit;
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
     padding-top: 10px;
+    opacity: 0;
+    transform: translateY(-20px);
+    animation: fadeSlideDown 1s forwards;
 }
 
 h1 { color: var(--primary-color); }
+
+input, select, button {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin-left: 5px;
+}
+
+button {
+    background: var(--primary-color);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+button:hover { background: #155ab6; }
 
 .video-container {
     display: flex;
@@ -66,8 +85,8 @@ h1 { color: var(--primary-color); }
     background: #fff;
     border-radius: 10px;
     max-width: 300px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     cursor: pointer;
     opacity: 0;
     transform: translateY(20px);
@@ -75,7 +94,26 @@ h1 { color: var(--primary-color); }
     position: relative;
 }
 
-.video-item .badge {
+body.dark-mode .video-item { background: #1e1e1e; }
+
+.video-title-bar {
+    background: var(--primary-color);
+    color: #fff;
+    padding: 8px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.video-thumb { width: 100%; }
+
+.video-meta {
+    font-size: 12px;
+    padding: 6px;
+    text-align: center;
+    opacity: 0.8;
+}
+
+.badge {
     position: absolute;
     top: 8px;
     left: 8px;
@@ -86,25 +124,6 @@ h1 { color: var(--primary-color); }
     border-radius: 5px;
 }
 
-.video-title-bar {
-    background: var(--primary-color);
-    color: #fff;
-    padding: 8px;
-    text-align: center;
-}
-
-.video-meta {
-    font-size: 12px;
-    padding: 6px;
-    text-align: center;
-    opacity: 0.7;
-}
-
-.video-thumb {
-    width: 100%;
-}
-
-/* Toast */
 #toast {
     position: fixed;
     top: 20px;
@@ -117,10 +136,8 @@ h1 { color: var(--primary-color); }
     transition: 0.4s;
     z-index: 999;
 }
-
 #toast.show { opacity: 1; }
 
-/* No results */
 #noResults {
     text-align: center;
     font-weight: bold;
@@ -128,9 +145,43 @@ h1 { color: var(--primary-color); }
     margin-top: 20px;
 }
 
-/* Mobile touch boost */
-@media (max-width: 600px) {
-    .video-item { max-width: 95%; }
+#backToTop {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: var(--primary-color);
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 50%;
+    font-size: 18px;
+    display: none;
+}
+
+#modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+}
+
+#modal iframe {
+    width: 80%;
+    max-width: 800px;
+    height: 450px;
+}
+
+#modal button {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 24px;
+}
+
+@keyframes fadeSlideDown {
+    to { opacity: 1; transform: translateY(0); }
 }
 </style>
 </head>
@@ -142,14 +193,20 @@ h1 { color: var(--primary-color); }
 <header>
     <h1>STRAWHAT PIRATES</h1>
     <div>
-        <input type="text" id="searchBar" placeholder="Search videos..." onkeyup="filterVideos()">
+        <input type="text" id="searchBar" placeholder="Search..." onkeyup="applyFilters()">
+        <select id="sortSelect" onchange="applyFilters()">
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+        </select>
+        <label>
+            <input type="checkbox" id="shortsOnly" onchange="applyFilters()"> Shorts
+        </label>
         <button onclick="toggleLayout()">Grid/List</button>
         <button id="darkToggle">Dark Mode</button>
     </div>
 </header>
 
 <div id="noResults">No videos found.</div>
-
 <div class="video-container" id="videoContainer"></div>
 
 <div id="modal">
@@ -159,9 +216,17 @@ h1 { color: var(--primary-color); }
 
 <button id="backToTop" onclick="scrollToTop()">↑</button>
 
+<footer>
+<p>
+<a href="https://www.youtube.com/@StrawHatPiratesShorts" target="_blank">Visit My YouTube Channel</a> |
+<a href="https://docs.google.com/forms/d/e/1FAIpQLSdauUZM0o4gdv2TF5vsTTH4xEMDxmwfMR0HIurhpsVMCt9xuw/viewform?usp=sharing" target="_blank">What Video Next?</a>
+</p>
+</footer>
+
 <script>
 const apiKey = "AIzaSyDdBjS9Cx-EqbVr3wfpU02z8Hx_QqcVczA";
 const channelId = "UCjI8w8hsikqXMO2LOn-8UQw";
+
 let allVideos = [];
 let nextPageToken = "";
 let loading = false;
@@ -175,7 +240,7 @@ function showToast(msg) {
     const t = document.getElementById("toast");
     t.textContent = msg;
     t.classList.add("show");
-    setTimeout(() => t.classList.remove("show"), 5000);
+    setTimeout(() => t.classList.remove("show"), 4000);
 }
 
 /* Dark mode remember */
@@ -189,14 +254,12 @@ darkToggleBtn.onclick = () => {
     const d = document.body.classList.contains("dark-mode");
     darkToggleBtn.textContent = d ? "Light Mode" : "Dark Mode";
     localStorage.setItem("dark", d);
-    showToast(d ? "Dark mode on" : "Light mode on");
 };
 
 /* Layout toggle */
 function toggleLayout() {
     listMode = !listMode;
     container.classList.toggle("list", listMode);
-    showToast(listMode ? "List view" : "Grid view");
 }
 
 /* Modal */
@@ -213,6 +276,12 @@ function closeModal() {
     iframe.src = "";
 }
 
+/* Helpers */
+function parseDuration(iso) {
+    const m = iso.match(/PT(?:(\d+)M)?(?:(\d+)S)?/);
+    return (parseInt(m?.[1] || 0) * 60) + parseInt(m?.[2] || 0);
+}
+
 /* Fetch playlist */
 async function getUploadPlaylist() {
     const res = await fetch(
@@ -223,35 +292,63 @@ async function getUploadPlaylist() {
 }
 
 /* Fetch videos */
-async function fetchVideos(playlistId) {
+async function fetchVideos(pid) {
     if (loading) return;
     loading = true;
 
     const res = await fetch(
-        `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${playlistId}&maxResults=50&pageToken=${nextPageToken}&key=${apiKey}`
+        `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${pid}&maxResults=50&pageToken=${nextPageToken}&key=${apiKey}`
     );
     const data = await res.json();
     nextPageToken = data.nextPageToken || null;
 
-    data.items.forEach(item => {
+    const ids = data.items.map(i => i.snippet.resourceId.videoId).join(",");
+
+    const stats = await fetch(
+        `https://www.googleapis.com/youtube/v3/videos?part=statistics,contentDetails&id=${ids}&key=${apiKey}`
+    ).then(r => r.json());
+
+    data.items.forEach((item, i) => {
         allVideos.push({
             title: item.snippet.title,
             videoId: item.snippet.resourceId.videoId,
             thumb: item.snippet.thumbnails.medium.url,
-            date: item.snippet.publishedAt
+            date: item.snippet.publishedAt,
+            views: stats.items[i].statistics.viewCount,
+            likes: stats.items[i].statistics.likeCount,
+            duration: parseDuration(stats.items[i].contentDetails.duration)
         });
     });
 
     loading = false;
-    renderVideos();
-    showToast("✅ Videos loaded");
+    applyFilters();
+}
+
+/* Filters + sort */
+function applyFilters() {
+    let vids = [...allVideos];
+    const term = searchBar.value.toLowerCase();
+    const shorts = shortsOnly.checked;
+    const sort = sortSelect.value;
+
+    vids = vids.filter(v =>
+        v.title.toLowerCase().includes(term) &&
+        (!shorts || v.duration <= 60)
+    );
+
+    vids.sort((a,b) =>
+        sort === "newest"
+            ? new Date(b.date) - new Date(a.date)
+            : new Date(a.date) - new Date(b.date)
+    );
+
+    renderVideos(vids);
 }
 
 /* Render */
-function renderVideos(filtered) {
+function renderVideos(vids) {
     container.innerHTML = "";
-    const vids = filtered || allVideos;
-    document.getElementById("noResults").style.display = vids.length ? "none" : "block";
+    noResults.style.display = vids.length ? "none" : "block";
 
     vids.forEach((v,i) => {
         const div = document.createElement("div");
@@ -259,33 +356,36 @@ function renderVideos(filtered) {
         div.innerHTML = `
             ${i < 3 ? `<div class="badge">NEW</div>` : ""}
             <div class="video-title-bar">${v.title}</div>
-            <img loading="lazy" class="video-thumb" src="${v.thumb}"
-                 onclick="openModal('${v.videoId}')">
-            <div class="video-meta">${new Date(v.date).toLocaleDateString()}</div>
+            <img class="video-thumb" loading="lazy"
+                src="${v.thumb}"
+                onmouseover="this.src='https://img.youtube.com/vi/${v.videoId}/hqdefault.jpg'"
+                onclick="openModal('${v.videoId}')">
+            <div class="video-meta">
+                👁 ${Number(v.views).toLocaleString()} |
+                👍 ${Number(v.likes).toLocaleString()}
+            </div>
         `;
         container.appendChild(div);
         setTimeout(() => div.style.opacity = 1, 50);
     });
 }
 
-/* Search */
-function filterVideos() {
-    const term = searchBar.value.toLowerCase();
-    renderVideos(allVideos.filter(v => v.title.toLowerCase().includes(term)));
-}
-
 /* Scroll */
 window.onscroll = () => {
     backToTop.style.display = window.scrollY > 300 ? "block" : "none";
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 300 && nextPageToken) {
+        fetchVideos(currentPlaylistId);
+    }
 };
 
 function scrollToTop() {
-    window.scrollTo({top:0, behavior:"smooth"});
+    window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-
-/* Offline */
-window.addEventListener("offline", () => showToast("You are offline"));
+/* PWA */
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js");
+}
 
 let currentPlaylistId;
 (async function init() {
@@ -293,7 +393,6 @@ let currentPlaylistId;
     fetchVideos(currentPlaylistId);
 })();
 </script>
-<footer> <p> <a href="https://www.youtube.com/@StrawHatPiratesShorts" target="_blank">Visit My YouTube Channel</a> | <a href="https://docs.google.com/forms/d/e/1FAIpQLSdauUZM0o4gdv2TF5vsTTH4xEMDxmwfMR0HIurhpsVMCt9xuw/viewform?usp=sharing&ouid=110755681522104233931" target="_blank">What Video Next? Form</a> </p> </footer>
+
 </body>
 </html>
-
