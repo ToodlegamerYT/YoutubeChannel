@@ -1,11 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <link rel="icon" href="straw.png" type="image/png">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>StrawHatPiratesShorts Gallery</title>
+
+<link rel="preconnect" href="https://www.googleapis.com">
+<link rel="preconnect" href="https://img.youtube.com">
+
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
 <style>
 :root {
     --primary-color: #1a73e8;
@@ -28,49 +35,20 @@ body.dark-mode {
     color: var(--text-dark);
 }
 
+/* Sticky header for mobile */
 header {
+    position: sticky;
+    top: 0;
+    background: inherit;
+    z-index: 150;
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
-    opacity: 0;
-    transform: translateY(-20px);
-    animation: fadeSlideDown 1s forwards;
+    padding-top: 10px;
 }
 
-h1 {
-    color: var(--primary-color);
-    font-size: 2em;
-}
-
-input[type="text"] {
-    padding: 10px;
-    width: 250px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    font-size: 0.95em;
-    transition: box-shadow 0.3s;
-}
-
-input[type="text"]:focus {
-    outline: none;
-    box-shadow: 0 0 8px var(--primary-color);
-}
-
-button#darkToggle {
-    padding: 8px 12px;
-    background: var(--primary-color);
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background 0.3s;
-}
-
-button#darkToggle:hover {
-    background: #155ab6;
-}
+h1 { color: var(--primary-color); }
 
 .video-container {
     display: flex;
@@ -79,145 +57,105 @@ button#darkToggle:hover {
     justify-content: center;
 }
 
+.video-container.list {
+    flex-direction: column;
+    align-items: center;
+}
+
 .video-item {
     background: #fff;
     border-radius: 10px;
-    width: 100%;
     max-width: 300px;
-    overflow: hidden;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    overflow: hidden;
     cursor: pointer;
-    display: flex;
-    flex-direction: column;
     opacity: 0;
     transform: translateY(20px);
-    transition: transform 0.3s, box-shadow 0.3s, opacity 0.5s;
+    transition: 0.3s;
+    position: relative;
 }
 
-body.dark-mode .video-item {
-    background: #1e1e1e;
-}
-
-.video-item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+.video-item .badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: crimson;
+    color: #fff;
+    padding: 3px 7px;
+    font-size: 12px;
+    border-radius: 5px;
 }
 
 .video-title-bar {
-    background-color: var(--primary-color);
+    background: var(--primary-color);
     color: #fff;
     padding: 8px;
-    font-weight: bold;
-    font-size: 0.95em;
     text-align: center;
+}
+
+.video-meta {
+    font-size: 12px;
+    padding: 6px;
+    text-align: center;
+    opacity: 0.7;
 }
 
 .video-thumb {
     width: 100%;
-    display: block;
 }
 
-footer {
-    margin-top: 40px;
-    text-align: center;
-    font-size: 0.95em;
-}
-
-footer a {
-    color: var(--primary-color);
-    margin: 0 10px;
-    text-decoration: none;
-    font-weight: bold;
-    transition: text-decoration 0.3s;
-}
-
-footer a:hover {
-    text-decoration: underline;
-}
-
-/* Back to top button */
-#backToTop {
+/* Toast */
+#toast {
     position: fixed;
-    bottom: 30px;
-    right: 30px;
+    top: 20px;
+    left: 20px;
     background: var(--primary-color);
     color: #fff;
-    padding: 10px 14px;
-    border: none;
-    border-radius: 50%;
-    font-size: 18px;
-    cursor: pointer;
+    padding: 12px 18px;
+    border-radius: 8px;
+    opacity: 0;
+    transition: 0.4s;
+    z-index: 999;
+}
+
+#toast.show { opacity: 1; }
+
+/* No results */
+#noResults {
+    text-align: center;
+    font-weight: bold;
     display: none;
-    z-index: 100;
-    transition: background 0.3s;
+    margin-top: 20px;
 }
 
-#backToTop:hover {
-    background: #155ab6;
-}
-
-/* Modal */
-#modal {
-    position: fixed;
-    top:0; left:0;
-    width:100%; height:100%;
-    background: rgba(0,0,0,0.8);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 200;
-}
-
-#modal iframe {
-    width: 80%;
-    max-width: 800px;
-    height: 450px;
-}
-
-#modal button {
-    position: absolute;
-    top:20px;
-    right:20px;
-    background:#fff;
-    border:none;
-    font-size:24px;
-    cursor:pointer;
-    border-radius:5px;
-    padding:5px 10px;
-}
-
-/* Animations */
-@keyframes fadeSlideDown {
-    to {opacity:1; transform:translateY(0);}
+/* Mobile touch boost */
+@media (max-width: 600px) {
+    .video-item { max-width: 95%; }
 }
 </style>
 </head>
+
 <body>
 
+<div id="toast"></div>
+
 <header>
-    <h1>StrawHatPiratesShorts Gallery</h1>
+    <h1>STRAWHAT PIRATES</h1>
     <div>
         <input type="text" id="searchBar" placeholder="Search videos..." onkeyup="filterVideos()">
+        <button onclick="toggleLayout()">Grid/List</button>
         <button id="darkToggle">Dark Mode</button>
     </div>
 </header>
 
-<div class="video-container" id="videoContainer">
-    <!-- Videos will load dynamically -->
-</div>
+<div id="noResults">No videos found.</div>
 
-<!-- Modal for video playback -->
+<div class="video-container" id="videoContainer"></div>
+
 <div id="modal">
     <button onclick="closeModal()">✖</button>
-    <iframe src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+    <iframe allowfullscreen></iframe>
 </div>
-
-<footer>
-    <p>
-        <a href="https://www.youtube.com/@StrawHatPiratesShorts" target="_blank">Visit My YouTube Channel</a> |
-        <a href="https://docs.google.com/forms/d/e/1FAIpQLSdauUZM0o4gdv2TF5vsTTH4xEMDxmwfMR0HIurhpsVMCt9xuw/viewform?usp=sharing&ouid=110755681522104233931" target="_blank">Fill Out the Form</a>
-    </p>
-</footer>
 
 <button id="backToTop" onclick="scrollToTop()">↑</button>
 
@@ -227,104 +165,127 @@ const channelId = "UCjI8w8hsikqXMO2LOn-8UQw";
 let allVideos = [];
 let nextPageToken = "";
 let loading = false;
-const perLoad = 12;
+let listMode = false;
 
 const container = document.getElementById("videoContainer");
-
-// Dark mode toggle
-// Dark mode toggle with dynamic text
 const darkToggleBtn = document.getElementById("darkToggle");
+
+/* Toast */
+function showToast(msg) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 5000);
+}
+
+/* Dark mode remember */
+if (localStorage.getItem("dark") === "true") {
+    document.body.classList.add("dark-mode");
+    darkToggleBtn.textContent = "Light Mode";
+}
 
 darkToggleBtn.onclick = () => {
     document.body.classList.toggle("dark-mode");
-    if (document.body.classList.contains("dark-mode")) {
-        darkToggleBtn.textContent = "Light Mode";
-    } else {
-        darkToggleBtn.textContent = "Dark Mode";
-    }
+    const d = document.body.classList.contains("dark-mode");
+    darkToggleBtn.textContent = d ? "Light Mode" : "Dark Mode";
+    localStorage.setItem("dark", d);
+    showToast(d ? "Dark mode on" : "Light mode on");
 };
 
+/* Layout toggle */
+function toggleLayout() {
+    listMode = !listMode;
+    container.classList.toggle("list", listMode);
+    showToast(listMode ? "List view" : "Grid view");
+}
 
-// Back to top
+/* Modal */
+const modal = document.getElementById("modal");
+const iframe = modal.querySelector("iframe");
+
+function openModal(id) {
+    modal.style.display = "flex";
+    iframe.src = `https://www.youtube.com/embed/${id}?autoplay=1`;
+}
+
+function closeModal() {
+    modal.style.display = "none";
+    iframe.src = "";
+}
+
+/* Fetch playlist */
+async function getUploadPlaylist() {
+    const res = await fetch(
+        `https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=${channelId}&key=${apiKey}`
+    );
+    const data = await res.json();
+    return data.items[0].contentDetails.relatedPlaylists.uploads;
+}
+
+/* Fetch videos */
+async function fetchVideos(playlistId) {
+    if (loading) return;
+    loading = true;
+
+    const res = await fetch(
+        `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${playlistId}&maxResults=50&pageToken=${nextPageToken}&key=${apiKey}`
+    );
+    const data = await res.json();
+    nextPageToken = data.nextPageToken || null;
+
+    data.items.forEach(item => {
+        allVideos.push({
+            title: item.snippet.title,
+            videoId: item.snippet.resourceId.videoId,
+            thumb: item.snippet.thumbnails.medium.url,
+            date: item.snippet.publishedAt
+        });
+    });
+
+    loading = false;
+    renderVideos();
+    showToast("✅ Videos loaded");
+}
+
+/* Render */
+function renderVideos(filtered) {
+    container.innerHTML = "";
+    const vids = filtered || allVideos;
+    document.getElementById("noResults").style.display = vids.length ? "none" : "block";
+
+    vids.forEach((v,i) => {
+        const div = document.createElement("div");
+        div.className = "video-item";
+        div.innerHTML = `
+            ${i < 3 ? `<div class="badge">NEW</div>` : ""}
+            <div class="video-title-bar">${v.title}</div>
+            <img loading="lazy" class="video-thumb" src="${v.thumb}"
+                 onclick="openModal('${v.videoId}')">
+            <div class="video-meta">${new Date(v.date).toLocaleDateString()}</div>
+        `;
+        container.appendChild(div);
+        setTimeout(() => div.style.opacity = 1, 50);
+    });
+}
+
+/* Search */
+function filterVideos() {
+    const term = searchBar.value.toLowerCase();
+    renderVideos(allVideos.filter(v => v.title.toLowerCase().includes(term)));
+}
+
+/* Scroll */
 window.onscroll = () => {
-    document.getElementById("backToTop").style.display = window.scrollY > 300 ? "block" : "none";
+    backToTop.style.display = window.scrollY > 300 ? "block" : "none";
 };
 
 function scrollToTop() {
     window.scrollTo({top:0, behavior:"smooth"});
 }
 
-// Modal
-const modal = document.getElementById("modal");
-const modalIframe = modal.querySelector("iframe");
 
-function openModal(videoId) {
-    modal.style.display = "flex";
-    modalIframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-}
-
-function closeModal() {
-    modal.style.display = "none";
-    modalIframe.src = "";
-}
-
-// Fetch upload playlist ID
-async function getUploadPlaylist() {
-    const url = `https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=${channelId}&key=${apiKey}`;
-    const res = await fetch(url);
-    const data = await res.json();
-    return data.items[0].contentDetails.relatedPlaylists.uploads;
-}
-
-// Fetch videos (with pagination)
-async function fetchVideos(playlistId) {
-    if(loading) return;
-    loading = true;
-    const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${playlistId}&maxResults=50&pageToken=${nextPageToken}&key=${apiKey}`;
-    const res = await fetch(url);
-    const data = await res.json();
-    nextPageToken = data.nextPageToken || null;
-    data.items.forEach(item => {
-        allVideos.push({
-            title: item.snippet.title,
-            videoId: item.snippet.resourceId.videoId,
-            thumb: item.snippet.thumbnails.medium.url
-        });
-    });
-    loading = false;
-    renderVideos();
-}
-
-// Render videos
-function renderVideos(filteredVideos) {
-    container.innerHTML = "";
-    const videos = filteredVideos || allVideos;
-    videos.forEach(v => {
-        const div = document.createElement("div");
-        div.classList.add("video-item");
-        div.setAttribute("data-title", v.title.toLowerCase());
-        div.innerHTML = `
-            <div class="video-title-bar">${v.title}</div>
-            <img class="video-thumb" src="${v.thumb}" alt="${v.title}" onmouseover="this.src='https://img.youtube.com/vi/${v.videoId}/hqdefault.jpg'" onclick="openModal('${v.videoId}')">
-        `;
-        container.appendChild(div);
-        setTimeout(()=> div.style.opacity = 1, 50); // fade in
-    });
-}
-
-// Filter
-function filterVideos() {
-    const searchTerm = document.getElementById("searchBar").value.toLowerCase();
-    const filtered = allVideos.filter(v => v.title.toLowerCase().includes(searchTerm));
-    renderVideos(filtered);
-}
-
-// Infinite scroll
-window.addEventListener("scroll", () => {
-    if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 300 && nextPageToken) {
-        fetchVideos(currentPlaylistId);
-    }
-});
+/* Offline */
+window.addEventListener("offline", () => showToast("You are offline"));
 
 let currentPlaylistId;
 (async function init() {
@@ -332,5 +293,7 @@ let currentPlaylistId;
     fetchVideos(currentPlaylistId);
 })();
 </script>
+<footer> <p> <a href="https://www.youtube.com/@StrawHatPiratesShorts" target="_blank">Visit My YouTube Channel</a> | <a href="https://docs.google.com/forms/d/e/1FAIpQLSdauUZM0o4gdv2TF5vsTTH4xEMDxmwfMR0HIurhpsVMCt9xuw/viewform?usp=sharing&ouid=110755681522104233931" target="_blank">What Video Next? Form</a> </p> </footer>
 </body>
 </html>
+
