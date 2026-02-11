@@ -94,6 +94,14 @@ button:hover { background: #155ab6; }
     position: relative;
 }
 
+.video-item:hover {
+    transform: translateY(-6px) scale(1.02);
+}
+
+.video-item.watched {
+    opacity: 0.6;
+}
+
 body.dark-mode .video-item { background: #1e1e1e; }
 
 .video-title-bar {
@@ -122,6 +130,49 @@ body.dark-mode .video-item { background: #1e1e1e; }
     padding: 3px 7px;
     font-size: 12px;
     border-radius: 5px;
+}
+
+.duration {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: rgba(0,0,0,0.75);
+    color: #fff;
+    padding: 3px 6px;
+    font-size: 12px;
+    border-radius: 4px;
+}
+
+.fav-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0,0,0,0.7);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+}
+.fav-btn.active { background: crimson; }
+
+.yt-like {
+    margin-top: 5px;
+    font-size: 12px;
+    background: #cc0000;
+}
+
+.skeleton {
+    background: linear-gradient(90deg,#eee,#ddd,#eee);
+    height: 250px;
+    width: 300px;
+    border-radius: 10px;
+    animation: shimmer 1.2s infinite;
+}
+@keyframes shimmer {
+    0% { background-position: -200px 0; }
+    100% { background-position: 200px 0; }
 }
 
 #toast {
@@ -197,6 +248,8 @@ body.dark-mode .video-item { background: #1e1e1e; }
         <select id="sortSelect" onchange="applyFilters()">
             <option value="newest">Newest</option>
             <option value="oldest">Oldest</option>
+            <option value="views">Most Views</option>
+            <option value="likes">Most Likes</option>
         </select>
         <label>
             <input type="checkbox" id="shortsOnly" onchange="applyFilters()"> Shorts
@@ -218,7 +271,7 @@ body.dark-mode .video-item { background: #1e1e1e; }
 
 <footer>
 <p>
-<a href="https://www.youtube.com/@StrawHatPiratesShorts" target="_blank">Visit My YouTube Channel</a> |
+<a href="https://www.youtube.com/@StrawHatPiratesShorts" target="_blank">Visit My YouTube Channel</a>
 <a href="https://docs.google.com/forms/d/e/1FAIpQLSdauUZM0o4gdv2TF5vsTTH4xEMDxmwfMR0HIurhpsVMCt9xuw/viewform?usp=sharing" target="_blank">What Video Next?</a>
 </p>
 </footer>
@@ -231,6 +284,9 @@ let allVideos = [];
 let nextPageToken = "";
 let loading = false;
 let listMode = false;
+
+let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+let watched = JSON.parse(localStorage.getItem("watched") || "[]");
 
 const container = document.getElementById("videoContainer");
 const darkToggleBtn = document.getElementById("darkToggle");
@@ -267,6 +323,7 @@ const modal = document.getElementById("modal");
 const iframe = modal.querySelector("iframe");
 
 function openModal(id) {
+    markWatched(id);
     modal.style.display = "flex";
     iframe.src = `https://www.youtube.com/embed/${id}?autoplay=1`;
 }
@@ -336,11 +393,16 @@ function applyFilters() {
         (!shorts || v.duration <= 60)
     );
 
-    vids.sort((a,b) =>
-        sort === "newest"
+    vids.sort((a,b) => {
+        if (sort === "views") return b.views - a.views;
+        if (sort === "likes") return b.likes - a.likes;
+        return sort === "newest"
             ? new Date(b.date) - new Date(a.date)
-            : new Date(a.date) - new Date(b.date)
-    );
+            : new Date(a.date) - new Date(b.date);
+    });
+
+    localStorage.setItem("sort", sort);
+    localStorage.setItem("shorts", shorts);
 
     renderVideos(vids);
 }
@@ -351,23 +413,66 @@ function renderVideos(vids) {
     noResults.style.display = vids.length ? "none" : "block";
 
     vids.forEach((v,i) => {
+        const mins = Math.floor(v.duration / 60);
+        const secs = (v.duration % 60).toString().padStart(2,"0");
+
         const div = document.createElement("div");
         div.className = "video-item";
+
+        if (watched.includes(v.videoId)) div.classList.add("watched");
+
         div.innerHTML = `
             ${i < 3 ? `<div class="badge">NEW</div>` : ""}
+            <button class="fav-btn ${favorites.includes(v.videoId) ? "active" : ""}"
+                onclick="toggleFavorite('${v.videoId}', event)">❤️</button>
+
             <div class="video-title-bar">${v.title}</div>
+
             <img class="video-thumb" loading="lazy"
                 src="${v.thumb}"
-                onmouseover="this.src='https://img.youtube.com/vi/${v.videoId}/hqdefault.jpg'"
                 onclick="openModal('${v.videoId}')">
+
+            <div class="duration">${mins}:${secs}</div>
+
             <div class="video-meta">
                 👁 ${Number(v.views).toLocaleString()} |
                 👍 ${Number(v.likes).toLocaleString()}
+                <br>
+                <button class="yt-like"
+                    onclick="likeOnYouTube('${v.videoId}', event)">
+                    👍 Like on YouTube
+                </button>
             </div>
         `;
         container.appendChild(div);
         setTimeout(() => div.style.opacity = 1, 50);
     });
+}
+
+/* Watched */
+function markWatched(id) {
+    if (!watched.includes(id)) {
+        watched.push(id);
+        localStorage.setItem("watched", JSON.stringify(watched));
+    }
+}
+
+/* Favorites */
+function toggleFavorite(id, e) {
+    e.stopPropagation();
+    favorites = favorites.includes(id)
+        ? favorites.filter(f => f !== id)
+        : [...favorites, id];
+    localStorage.setItem("favorites", JSON.stringify(favorites));
+    showToast("Saved to favorites ❤️ (site only)");
+    applyFilters();
+}
+
+/* YouTube Like */
+function likeOnYouTube(id, e) {
+    e.stopPropagation();
+    showToast("Liking on YouTube helps the channel ☠️");
+    window.open(`https://www.youtube.com/watch?v=${id}`, "_blank");
 }
 
 /* Scroll */
@@ -389,6 +494,9 @@ if ("serviceWorker" in navigator) {
 
 let currentPlaylistId;
 (async function init() {
+    if (localStorage.getItem("shorts") === "true") shortsOnly.checked = true;
+    if (localStorage.getItem("sort")) sortSelect.value = localStorage.getItem("sort");
+
     currentPlaylistId = await getUploadPlaylist();
     fetchVideos(currentPlaylistId);
 })();
