@@ -283,7 +283,6 @@ const channelId = "UCjI8w8hsikqXMO2LOn-8UQw";
 let allVideos = [];
 let nextPageToken = "";
 let loading = false;
-let listMode = false;
 
 let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
 let watched = JSON.parse(localStorage.getItem("watched") || "[]");
@@ -312,12 +311,6 @@ darkToggleBtn.onclick = () => {
     localStorage.setItem("dark", d);
 };
 
-/* Layout toggle */
-function toggleLayout() {
-    listMode = !listMode;
-    container.classList.toggle("list", listMode);
-}
-
 /* Modal */
 const modal = document.getElementById("modal");
 const iframe = modal.querySelector("iframe");
@@ -332,6 +325,10 @@ function closeModal() {
     modal.style.display = "none";
     iframe.src = "";
 }
+
+document.addEventListener("keydown", e => {
+    if (e.key === "Escape") closeModal();
+});
 
 /* Helpers */
 function parseDuration(iso) {
@@ -354,7 +351,7 @@ async function fetchVideos(pid) {
     loading = true;
 
     const res = await fetch(
-        `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${pid}&maxResults=50&pageToken=${nextPageToken}&key=${apiKey}`
+        `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${pid}&maxResults=50&pageToken=${nextPageToken || ""}&key=${apiKey}`
     );
     const data = await res.json();
     nextPageToken = data.nextPageToken || null;
@@ -371,8 +368,8 @@ async function fetchVideos(pid) {
             videoId: item.snippet.resourceId.videoId,
             thumb: item.snippet.thumbnails.medium.url,
             date: item.snippet.publishedAt,
-            views: stats.items[i].statistics.viewCount,
-            likes: stats.items[i].statistics.likeCount,
+            views: Number(stats.items[i].statistics.viewCount || 0),
+            likes: Number(stats.items[i].statistics.likeCount || 0),
             duration: parseDuration(stats.items[i].contentDetails.duration)
         });
     });
@@ -381,62 +378,66 @@ async function fetchVideos(pid) {
     applyFilters();
 }
 
-/* Filters + sort */
+/* Filters */
 function applyFilters() {
     let vids = [...allVideos];
     const term = searchBar.value.toLowerCase();
     const shorts = shortsOnly.checked;
-    const sort = sortSelect.value;
+    const favOnly = document.getElementById("favoritesOnly")?.checked;
 
     vids = vids.filter(v =>
         v.title.toLowerCase().includes(term) &&
-        (!shorts || v.duration <= 60)
+        (!shorts || v.duration <= 60) &&
+        (!favOnly || favorites.includes(v.videoId))
     );
-
-    vids.sort((a,b) => {
-        if (sort === "views") return b.views - a.views;
-        if (sort === "likes") return b.likes - a.likes;
-        return sort === "newest"
-            ? new Date(b.date) - new Date(a.date)
-            : new Date(a.date) - new Date(b.date);
-    });
-
-    localStorage.setItem("sort", sort);
-    localStorage.setItem("shorts", shorts);
 
     renderVideos(vids);
 }
 
-/* Render */
+/* Render Netflix Style */
 function renderVideos(vids) {
-    container.innerHTML = "";
-    noResults.style.display = vids.length ? "none" : "block";
+    container.innerHTML = `
+        <h2>🔥 Trending</h2>
+        <div class="row" id="trendingRow"></div>
 
-    vids.forEach((v,i) => {
+        <h2>🆕 New This Week</h2>
+        <div class="row" id="newRow"></div>
+
+        <h2>📺 All Videos</h2>
+        <div class="row" id="allRow"></div>
+    `;
+
+    const trendingRow = document.getElementById("trendingRow");
+    const newRow = document.getElementById("newRow");
+    const allRow = document.getElementById("allRow");
+
+    vids.forEach(v => {
+        const isNew = (new Date() - new Date(v.date)) < (7 * 24 * 60 * 60 * 1000);
         const mins = Math.floor(v.duration / 60);
         const secs = (v.duration % 60).toString().padStart(2,"0");
 
         const div = document.createElement("div");
         div.className = "video-item";
 
-        if (watched.includes(v.videoId)) div.classList.add("watched");
-
         div.innerHTML = `
-            ${i < 3 ? `<div class="badge">NEW</div>` : ""}
+            ${isNew ? `<div class="badge">NEW</div>` : ""}
             <button class="fav-btn ${favorites.includes(v.videoId) ? "active" : ""}"
                 onclick="toggleFavorite('${v.videoId}', event)">❤️</button>
 
-            <div class="video-title-bar">${v.title}</div>
-
-            <img class="video-thumb" loading="lazy"
+            <img class="video-thumb"
+                loading="lazy"
                 src="${v.thumb}"
                 onclick="openModal('${v.videoId}')">
 
-            <div class="duration">${mins}:${secs}</div>
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-${v.videoId}"></div>
+            </div>
 
             <div class="video-meta">
-                👁 ${Number(v.views).toLocaleString()} |
-                👍 ${Number(v.likes).toLocaleString()}
+                <strong>${v.title}</strong><br>
+                👁 ${v.views.toLocaleString()} |
+                👍 ${v.likes.toLocaleString()} |
+                ⏱ ${mins}:${secs}
                 <br>
                 <button class="yt-like"
                     onclick="likeOnYouTube('${v.videoId}', event)">
@@ -444,17 +445,28 @@ function renderVideos(vids) {
                 </button>
             </div>
         `;
-        container.appendChild(div);
-        setTimeout(() => div.style.opacity = 1, 50);
+
+        if (v.views > 100000) trendingRow.appendChild(div.cloneNode(true));
+        if (isNew) newRow.appendChild(div.cloneNode(true));
+        allRow.appendChild(div);
+
+        const savedProgress = localStorage.getItem("progress_" + v.videoId);
+        if (savedProgress) {
+            setTimeout(() => {
+                const bar = document.getElementById("progress-" + v.videoId);
+                if (bar) bar.style.width = savedProgress + "%";
+            }, 50);
+        }
     });
 }
 
-/* Watched */
+/* Watch progress */
 function markWatched(id) {
     if (!watched.includes(id)) {
         watched.push(id);
         localStorage.setItem("watched", JSON.stringify(watched));
     }
+    localStorage.setItem("progress_" + id, 100);
 }
 
 /* Favorites */
@@ -464,7 +476,7 @@ function toggleFavorite(id, e) {
         ? favorites.filter(f => f !== id)
         : [...favorites, id];
     localStorage.setItem("favorites", JSON.stringify(favorites));
-    showToast("Saved to favorites ❤️ (site only)");
+    showToast("Saved to favorites ❤️");
     applyFilters();
 }
 
@@ -492,15 +504,15 @@ if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("sw.js");
 }
 
+/* Init */
 let currentPlaylistId;
 (async function init() {
-    if (localStorage.getItem("shorts") === "true") shortsOnly.checked = true;
-    if (localStorage.getItem("sort")) sortSelect.value = localStorage.getItem("sort");
-
+    container.innerHTML = '<div class="skeleton"></div>'.repeat(6);
     currentPlaylistId = await getUploadPlaylist();
     fetchVideos(currentPlaylistId);
 })();
 </script>
+
 
 </body>
 </html>
