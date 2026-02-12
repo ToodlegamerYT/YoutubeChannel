@@ -5,12 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>StrawHatPiratesShorts Gallery</title>
 
-<link rel="icon" href="strawhat.jpeg" type="image/png">
-<link rel="manifest" href="manifest.json">
-
-<link rel="preconnect" href="https://www.googleapis.com">
-<link rel="preconnect" href="https://img.youtube.com">
-
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
@@ -27,7 +21,7 @@ body {
     background: var(--bg-light);
     color: var(--text-light);
     padding: 20px;
-    transition: background 0.3s, color 0.3s;
+    transition: 0.3s;
 }
 
 body.dark-mode {
@@ -36,18 +30,12 @@ body.dark-mode {
 }
 
 header {
-    position: sticky;
-    top: 0;
-    z-index: 150;
-    background: inherit;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
-    padding-top: 10px;
-    opacity: 0;
-    transform: translateY(-20px);
-    animation: fadeSlideDown 1s forwards;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 h1 { color: var(--primary-color); }
@@ -56,7 +44,6 @@ input, select, button {
     padding: 8px;
     border-radius: 5px;
     border: 1px solid #ccc;
-    margin-left: 5px;
 }
 
 button {
@@ -76,71 +63,33 @@ button:hover { background: #155ab6; }
     justify-content: center;
 }
 
-.video-container.list {
-    flex-direction: column;
-    align-items: center;
-}
-
 .video-item {
     background: #fff;
     border-radius: 10px;
-    max-width: 300px;
+    width: 300px;
     overflow: hidden;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    cursor: pointer;
-    opacity: 0;
-    transform: translateY(20px);
     transition: 0.3s;
     position: relative;
 }
 
+body.dark-mode .video-item {
+    background: #1e1e1e;
+}
+
 .video-item:hover {
-    transform: translateY(-6px) scale(1.02);
+    transform: translateY(-5px) scale(1.02);
 }
 
-.video-item.watched {
-    opacity: 0.6;
+.video-thumb {
+    width: 100%;
+    cursor: pointer;
 }
-
-body.dark-mode .video-item { background: #1e1e1e; }
-
-.video-title-bar {
-    background: var(--primary-color);
-    color: #fff;
-    padding: 8px;
-    text-align: center;
-    font-weight: bold;
-}
-
-.video-thumb { width: 100%; }
 
 .video-meta {
-    font-size: 12px;
-    padding: 6px;
+    font-size: 13px;
+    padding: 8px;
     text-align: center;
-    opacity: 0.8;
-}
-
-.badge {
-    position: absolute;
-    top: 8px;
-    left: 8px;
-    background: crimson;
-    color: #fff;
-    padding: 3px 7px;
-    font-size: 12px;
-    border-radius: 5px;
-}
-
-.duration {
-    position: absolute;
-    bottom: 8px;
-    right: 8px;
-    background: rgba(0,0,0,0.75);
-    color: #fff;
-    padding: 3px 6px;
-    font-size: 12px;
-    border-radius: 4px;
 }
 
 .fav-btn {
@@ -148,65 +97,13 @@ body.dark-mode .video-item { background: #1e1e1e; }
     top: 8px;
     right: 8px;
     background: rgba(0,0,0,0.7);
-    color: #fff;
-    border: none;
+    color: white;
     border-radius: 50%;
     width: 30px;
     height: 30px;
-    cursor: pointer;
 }
+
 .fav-btn.active { background: crimson; }
-
-.yt-like {
-    margin-top: 5px;
-    font-size: 12px;
-    background: #cc0000;
-}
-
-.skeleton {
-    background: linear-gradient(90deg,#eee,#ddd,#eee);
-    height: 250px;
-    width: 300px;
-    border-radius: 10px;
-    animation: shimmer 1.2s infinite;
-}
-@keyframes shimmer {
-    0% { background-position: -200px 0; }
-    100% { background-position: 200px 0; }
-}
-
-#toast {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    background: var(--primary-color);
-    color: #fff;
-    padding: 12px 18px;
-    border-radius: 8px;
-    opacity: 0;
-    transition: 0.4s;
-    z-index: 999;
-}
-#toast.show { opacity: 1; }
-
-#noResults {
-    text-align: center;
-    font-weight: bold;
-    display: none;
-    margin-top: 20px;
-}
-
-#backToTop {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    background: var(--primary-color);
-    color: #fff;
-    padding: 10px 14px;
-    border-radius: 50%;
-    font-size: 18px;
-    display: none;
-}
 
 #modal {
     position: fixed;
@@ -215,7 +112,6 @@ body.dark-mode .video-item { background: #1e1e1e; }
     display: none;
     justify-content: center;
     align-items: center;
-    z-index: 200;
 }
 
 #modal iframe {
@@ -228,33 +124,32 @@ body.dark-mode .video-item { background: #1e1e1e; }
     position: absolute;
     top: 20px;
     right: 20px;
-    font-size: 24px;
+    font-size: 22px;
 }
 
-@keyframes fadeSlideDown {
-    to { opacity: 1; transform: translateY(0); }
+#noResults {
+    text-align: center;
+    display: none;
+    font-weight: bold;
 }
 </style>
 </head>
 
 <body>
 
-<div id="toast"></div>
-
 <header>
     <h1>STRAWHAT PIRATES</h1>
     <div>
-        <input type="text" id="searchBar" placeholder="Search..." onkeyup="applyFilters()">
-        <select id="sortSelect" onchange="applyFilters()">
+        <input type="text" id="searchBar" placeholder="Search...">
+        <select id="sortSelect">
             <option value="newest">Newest</option>
             <option value="oldest">Oldest</option>
             <option value="views">Most Views</option>
             <option value="likes">Most Likes</option>
         </select>
         <label>
-            <input type="checkbox" id="shortsOnly" onchange="applyFilters()"> Shorts
+            <input type="checkbox" id="shortsOnly"> Shorts
         </label>
-        <button onclick="toggleLayout()">Grid/List</button>
         <button id="darkToggle">Dark Mode</button>
     </div>
 </header>
@@ -267,15 +162,6 @@ body.dark-mode .video-item { background: #1e1e1e; }
     <iframe allowfullscreen></iframe>
 </div>
 
-<button id="backToTop" onclick="scrollToTop()">↑</button>
-
-<footer>
-<p>
-<a href="https://www.youtube.com/@StrawHatPiratesShorts" target="_blank">Visit My YouTube Channel</a>
-<a href="https://docs.google.com/forms/d/e/1FAIpQLSdauUZM0o4gdv2TF5vsTTH4xEMDxmwfMR0HIurhpsVMCt9xuw/viewform?usp=sharing" target="_blank">What Video Next?</a>
-</p>
-</footer>
-
 <script>
 const apiKey = "AIzaSyDdBjS9Cx-EqbVr3wfpU02z8Hx_QqcVczA";
 const channelId = "UCjI8w8hsikqXMO2LOn-8UQw";
@@ -283,32 +169,16 @@ const channelId = "UCjI8w8hsikqXMO2LOn-8UQw";
 let allVideos = [];
 let nextPageToken = "";
 let loading = false;
-
 let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-let watched = JSON.parse(localStorage.getItem("watched") || "[]");
 
 const container = document.getElementById("videoContainer");
+const searchBar = document.getElementById("searchBar");
+const shortsOnly = document.getElementById("shortsOnly");
+const sortSelect = document.getElementById("sortSelect");
 const darkToggleBtn = document.getElementById("darkToggle");
-
-/* Toast */
-function showToast(msg) {
-    const t = document.getElementById("toast");
-    t.textContent = msg;
-    t.classList.add("show");
-    setTimeout(() => t.classList.remove("show"), 4000);
-}
-
-/* Dark mode remember */
-if (localStorage.getItem("dark") === "true") {
-    document.body.classList.add("dark-mode");
-    darkToggleBtn.textContent = "Light Mode";
-}
 
 darkToggleBtn.onclick = () => {
     document.body.classList.toggle("dark-mode");
-    const d = document.body.classList.contains("dark-mode");
-    darkToggleBtn.textContent = d ? "Light Mode" : "Dark Mode";
-    localStorage.setItem("dark", d);
 };
 
 /* Modal */
@@ -316,7 +186,6 @@ const modal = document.getElementById("modal");
 const iframe = modal.querySelector("iframe");
 
 function openModal(id) {
-    markWatched(id);
     modal.style.display = "flex";
     iframe.src = `https://www.youtube.com/embed/${id}?autoplay=1`;
 }
@@ -326,17 +195,13 @@ function closeModal() {
     iframe.src = "";
 }
 
-document.addEventListener("keydown", e => {
-    if (e.key === "Escape") closeModal();
-});
-
-/* Helpers */
+/* Parse duration */
 function parseDuration(iso) {
-    const m = iso.match(/PT(?:(\d+)M)?(?:(\d+)S)?/);
-    return (parseInt(m?.[1] || 0) * 60) + parseInt(m?.[2] || 0);
+    const match = iso.match(/PT(?:(\d+)M)?(?:(\d+)S)?/);
+    return (parseInt(match?.[1] || 0) * 60) + parseInt(match?.[2] || 0);
 }
 
-/* Fetch playlist */
+/* Get playlist */
 async function getUploadPlaylist() {
     const res = await fetch(
         `https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=${channelId}&key=${apiKey}`
@@ -345,92 +210,71 @@ async function getUploadPlaylist() {
     return data.items[0].contentDetails.relatedPlaylists.uploads;
 }
 
+/* Fetch videos */
 async function fetchVideos(pid) {
-    if (!pid || loading) return;
+    if (loading) return;
     loading = true;
 
-    try {
-        const res = await fetch(
-            `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${pid}&maxResults=50&pageToken=${nextPageToken || ""}&key=${apiKey}`
-        );
-        const data = await res.json();
+    const res = await fetch(
+        `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${pid}&maxResults=50&pageToken=${nextPageToken}&key=${apiKey}`
+    );
+    const data = await res.json();
+    nextPageToken = data.nextPageToken || "";
 
-        if (!data.items) {
-            console.error(data);
-            showToast("Failed to load videos.");
-            loading = false;
-            return;
-        }
+    const ids = data.items.map(i => i.snippet.resourceId.videoId).join(",");
 
-        nextPageToken = data.nextPageToken || null;
+    const statsRes = await fetch(
+        `https://www.googleapis.com/youtube/v3/videos?part=statistics,contentDetails&id=${ids}&key=${apiKey}`
+    );
+    const stats = await statsRes.json();
 
-        const ids = data.items.map(i => i.snippet.resourceId.videoId).join(",");
-
-        const statsRes = await fetch(
-            `https://www.googleapis.com/youtube/v3/videos?part=statistics,contentDetails&id=${ids}&key=${apiKey}`
-        );
-        const stats = await statsRes.json();
-
-        data.items.forEach((item, i) => {
-            if (!stats.items[i]) return;
-
-            allVideos.push({
-                title: item.snippet.title,
-                videoId: item.snippet.resourceId.videoId,
-                thumb: item.snippet.thumbnails.medium.url,
-                date: item.snippet.publishedAt,
-                views: Number(stats.items[i].statistics.viewCount || 0),
-                likes: Number(stats.items[i].statistics.likeCount || 0),
-                duration: parseDuration(stats.items[i].contentDetails.duration)
-            });
+    data.items.forEach((item, i) => {
+        allVideos.push({
+            title: item.snippet.title,
+            videoId: item.snippet.resourceId.videoId,
+            thumb: item.snippet.thumbnails.medium.url,
+            date: item.snippet.publishedAt,
+            views: Number(stats.items[i].statistics.viewCount || 0),
+            likes: Number(stats.items[i].statistics.likeCount || 0),
+            duration: parseDuration(stats.items[i].contentDetails.duration)
         });
+    });
 
-        applyFilters();
-
-    } catch (err) {
-        console.error(err);
-        showToast("Error loading videos.");
-    }
-
+    applyFilters();
     loading = false;
 }
-
 
 /* Filters */
 function applyFilters() {
     let vids = [...allVideos];
-    const term = searchBar.value.toLowerCase();
-    const shorts = shortsOnly.checked;
-    const favOnly = document.getElementById("favoritesOnly")?.checked;
 
     vids = vids.filter(v =>
-        v.title.toLowerCase().includes(term) &&
-        (!shorts || v.duration <= 60) &&
-        (!favOnly || favorites.includes(v.videoId))
+        v.title.toLowerCase().includes(searchBar.value.toLowerCase()) &&
+        (!shortsOnly.checked || v.duration <= 60)
     );
+
+    if (sortSelect.value === "views")
+        vids.sort((a,b)=> b.views - a.views);
+    if (sortSelect.value === "likes")
+        vids.sort((a,b)=> b.likes - a.likes);
+    if (sortSelect.value === "newest")
+        vids.sort((a,b)=> new Date(b.date) - new Date(a.date));
+    if (sortSelect.value === "oldest")
+        vids.sort((a,b)=> new Date(a.date) - new Date(b.date));
 
     renderVideos(vids);
 }
 
-/* Render Netflix Style */
+/* Render */
 function renderVideos(vids) {
-    container.innerHTML = `
-        <h2>🔥 Trending</h2>
-        <div class="row" id="trendingRow"></div>
-
-        <h2>🆕 New This Week</h2>
-        <div class="row" id="newRow"></div>
-
-        <h2>📺 All Videos</h2>
-        <div class="row" id="allRow"></div>
-    `;
-
-    const trendingRow = document.getElementById("trendingRow");
-    const newRow = document.getElementById("newRow");
-    const allRow = document.getElementById("allRow");
+    container.innerHTML = "";
+    if (!vids.length) {
+        document.getElementById("noResults").style.display = "block";
+        return;
+    }
+    document.getElementById("noResults").style.display = "none";
 
     vids.forEach(v => {
-        const isNew = (new Date() - new Date(v.date)) < (7 * 24 * 60 * 60 * 1000);
         const mins = Math.floor(v.duration / 60);
         const secs = (v.duration % 60).toString().padStart(2,"0");
 
@@ -438,99 +282,40 @@ function renderVideos(vids) {
         div.className = "video-item";
 
         div.innerHTML = `
-            ${isNew ? `<div class="badge">NEW</div>` : ""}
             <button class="fav-btn ${favorites.includes(v.videoId) ? "active" : ""}"
                 onclick="toggleFavorite('${v.videoId}', event)">❤️</button>
-
-            <img class="video-thumb"
-                loading="lazy"
-                src="${v.thumb}"
-                onclick="openModal('${v.videoId}')">
-
-            <div class="progress-container">
-                <div class="progress-bar" id="progress-${v.videoId}"></div>
-            </div>
-
+            <img class="video-thumb" src="${v.thumb}" onclick="openModal('${v.videoId}')">
             <div class="video-meta">
                 <strong>${v.title}</strong><br>
-                👁 ${v.views.toLocaleString()} |
-                👍 ${v.likes.toLocaleString()} |
-                ⏱ ${mins}:${secs}
-                <br>
-                <button class="yt-like"
-                    onclick="likeOnYouTube('${v.videoId}', event)">
-                    👍 Like on YouTube
-                </button>
+                 ${v.views.toLocaleString()} |
+                 ${v.likes.toLocaleString()} |
+                 ${mins}:${secs}
             </div>
         `;
 
-        if (v.views > 100000) trendingRow.appendChild(div.cloneNode(true));
-        if (isNew) newRow.appendChild(div.cloneNode(true));
-        allRow.appendChild(div);
-
-        const savedProgress = localStorage.getItem("progress_" + v.videoId);
-        if (savedProgress) {
-            setTimeout(() => {
-                const bar = document.getElementById("progress-" + v.videoId);
-                if (bar) bar.style.width = savedProgress + "%";
-            }, 50);
-        }
+        container.appendChild(div);
     });
 }
 
-/* Watch progress */
-function markWatched(id) {
-    if (!watched.includes(id)) {
-        watched.push(id);
-        localStorage.setItem("watched", JSON.stringify(watched));
-    }
-    localStorage.setItem("progress_" + id, 100);
-}
-
-/* Favorites */
 function toggleFavorite(id, e) {
     e.stopPropagation();
     favorites = favorites.includes(id)
         ? favorites.filter(f => f !== id)
         : [...favorites, id];
     localStorage.setItem("favorites", JSON.stringify(favorites));
-    showToast("Saved to favorites ❤️");
     applyFilters();
 }
 
-/* YouTube Like */
-function likeOnYouTube(id, e) {
-    e.stopPropagation();
-    showToast("Liking on YouTube helps the channel ☠️");
-    window.open(`https://www.youtube.com/watch?v=${id}`, "_blank");
-}
-
-/* Scroll */
-window.onscroll = () => {
-    backToTop.style.display = window.scrollY > 300 ? "block" : "none";
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 300 && nextPageToken) {
-        fetchVideos(currentPlaylistId);
-    }
-};
-
-function scrollToTop() {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-/* PWA */
-if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("sw.js");
-}
+searchBar.oninput = applyFilters;
+sortSelect.onchange = applyFilters;
+shortsOnly.onchange = applyFilters;
 
 /* Init */
-let currentPlaylistId;
 (async function init() {
-    container.innerHTML = '<div class="skeleton"></div>'.repeat(6);
-    currentPlaylistId = await getUploadPlaylist();
-    fetchVideos(currentPlaylistId);
+    const playlist = await getUploadPlaylist();
+    fetchVideos(playlist);
 })();
 </script>
-
 
 </body>
 </html>
