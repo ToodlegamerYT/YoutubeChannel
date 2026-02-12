@@ -177,9 +177,23 @@ const shortsOnly = document.getElementById("shortsOnly");
 const sortSelect = document.getElementById("sortSelect");
 const darkToggleBtn = document.getElementById("darkToggle");
 
+// Load saved theme
+if (localStorage.getItem("darkMode") === "true") {
+    document.body.classList.add("dark-mode");
+    darkToggleBtn.textContent = "Light Mode";
+} else {
+    darkToggleBtn.textContent = "Dark Mode";
+}
+
+// Toggle theme
 darkToggleBtn.onclick = () => {
-    document.body.classList.toggle("dark-mode");
+    const isDark = document.body.classList.toggle("dark-mode");
+
+    darkToggleBtn.textContent = isDark ? "Light Mode" : "Dark Mode";
+
+    localStorage.setItem("darkMode", isDark);
 };
+
 
 /* Modal */
 const modal = document.getElementById("modal");
