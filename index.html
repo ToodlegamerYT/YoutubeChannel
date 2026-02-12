@@ -345,38 +345,56 @@ async function getUploadPlaylist() {
     return data.items[0].contentDetails.relatedPlaylists.uploads;
 }
 
-/* Fetch videos */
 async function fetchVideos(pid) {
-    if (loading) return;
+    if (!pid || loading) return;
     loading = true;
 
-    const res = await fetch(
-        `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${pid}&maxResults=50&pageToken=${nextPageToken || ""}&key=${apiKey}`
-    );
-    const data = await res.json();
-    nextPageToken = data.nextPageToken || null;
+    try {
+        const res = await fetch(
+            `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${pid}&maxResults=50&pageToken=${nextPageToken || ""}&key=${apiKey}`
+        );
+        const data = await res.json();
 
-    const ids = data.items.map(i => i.snippet.resourceId.videoId).join(",");
+        if (!data.items) {
+            console.error(data);
+            showToast("Failed to load videos.");
+            loading = false;
+            return;
+        }
 
-    const stats = await fetch(
-        `https://www.googleapis.com/youtube/v3/videos?part=statistics,contentDetails&id=${ids}&key=${apiKey}`
-    ).then(r => r.json());
+        nextPageToken = data.nextPageToken || null;
 
-    data.items.forEach((item, i) => {
-        allVideos.push({
-            title: item.snippet.title,
-            videoId: item.snippet.resourceId.videoId,
-            thumb: item.snippet.thumbnails.medium.url,
-            date: item.snippet.publishedAt,
-            views: Number(stats.items[i].statistics.viewCount || 0),
-            likes: Number(stats.items[i].statistics.likeCount || 0),
-            duration: parseDuration(stats.items[i].contentDetails.duration)
+        const ids = data.items.map(i => i.snippet.resourceId.videoId).join(",");
+
+        const statsRes = await fetch(
+            `https://www.googleapis.com/youtube/v3/videos?part=statistics,contentDetails&id=${ids}&key=${apiKey}`
+        );
+        const stats = await statsRes.json();
+
+        data.items.forEach((item, i) => {
+            if (!stats.items[i]) return;
+
+            allVideos.push({
+                title: item.snippet.title,
+                videoId: item.snippet.resourceId.videoId,
+                thumb: item.snippet.thumbnails.medium.url,
+                date: item.snippet.publishedAt,
+                views: Number(stats.items[i].statistics.viewCount || 0),
+                likes: Number(stats.items[i].statistics.likeCount || 0),
+                duration: parseDuration(stats.items[i].contentDetails.duration)
+            });
         });
-    });
+
+        applyFilters();
+
+    } catch (err) {
+        console.error(err);
+        showToast("Error loading videos.");
+    }
 
     loading = false;
-    applyFilters();
 }
+
 
 /* Filters */
 function applyFilters() {
